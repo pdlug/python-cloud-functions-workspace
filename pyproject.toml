@@ -1,0 +1,71 @@
+[project]
+name = "python-cloud-functions-workspace"
+version = "0.1.0"
+description = "Python monorepo using uv workspaces with Google Cloud Functions deployment"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+    "libs/*",
+    "services/*"
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint.isort]
+known-first-party = ["api"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "fastapi.*",
+    "functions_framework.*",
+    "httpx.*",
+]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.poe.tasks]
+mypy = "mypy libs/ services/"
+lint = "ruff check ."
+format = "ruff format ."
+typecheck = "mypy"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.17.1",
+    "poethepoet>=0.37.0",
+    "pydantic>=2.11.7",
+    "ruff>=0.12.10",
+    "types-requests>=2.32.4.20250809",
+]

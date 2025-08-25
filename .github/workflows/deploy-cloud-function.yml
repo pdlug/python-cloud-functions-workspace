@@ -1,0 +1,102 @@
+name: Deploy Cloud Function
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - uv.lock
+      - "services/api-function/**"
+      - "libs/api/**"
+  workflow_dispatch:
+
+env:
+  FUNCTION_NAME: ${{ vars.FUNCTION_NAME || 'api-function' }}
+  REGION: ${{ vars.REGION || 'us-central1' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Build deployment package
+        run: |
+          # Sync the entire workspace
+          uv sync --frozen
+
+          # Create a deployment directory
+          mkdir -p deploy-package
+
+          # Copy the function source
+          cp services/api-function/main.py deploy-package/
+
+          # Build all workspace packages - uv will handle dependency order automatically
+          uv build --all --out-dir deploy-package/
+
+          # Export only external dependencies (exclude workspace packages)
+          uv export --package api-function --format requirements-txt --no-hashes | \
+            grep -v "^-e ./" > deploy-package/requirements.txt
+
+          # Add all built wheels to requirements
+          for wheel in deploy-package/*.whl; do
+            if [ -f "$wheel" ]; then
+              echo "./$(basename "$wheel")" >> deploy-package/requirements.txt
+            fi
+          done
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Cloud Function
+        id: deploy
+        uses: google-github-actions/deploy-cloud-functions@v3
+        with:
+          name: ${{ env.FUNCTION_NAME }}
+          source_dir: deploy-package
+          runtime: python313
+          region: ${{ env.REGION }}
+          entry_point: api_function
+          memory: 256Mi
+          service_timeout: 60s
+
+      - name: Make Function Publicly Accessible
+        run: |
+          gcloud functions add-invoker-policy-binding ${{ env.FUNCTION_NAME }} \
+            --region=${{ env.REGION }} \
+            --member="allUsers"
+
+      - name: Display Function URL
+        run: |
+          FUNCTION_URL="${{ steps.deploy.outputs.url }}"
+
+          if [ -n "$FUNCTION_URL" ]; then
+            echo "✅ Function deployed successfully!"
+            echo "🌐 Function URL: $FUNCTION_URL"
+          else
+            echo "❌ Could not retrieve function URL from action output"
+            echo "Attempting to get URL via gcloud..."
+            gcloud functions describe ${{ env.FUNCTION_NAME }} \
+              --region=${{ env.REGION }} \
+              --format="value(serviceConfig.uri)"
+          fi
