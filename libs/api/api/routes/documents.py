@@ -3,7 +3,7 @@ from core.text import get_word_count
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 
 class WordCountRequest(BaseModel):

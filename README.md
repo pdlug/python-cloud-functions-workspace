@@ -43,8 +43,7 @@ The FastAPI app in `libs/api` provides:
 
 - `GET /hello` - Returns `{"text": "Hello World!"}`
 - `POST /hello` - Takes `{"name": "string"}` and returns `{"hello": "string"}`
-
-The `core` library includes a simple `TextDocument` model and `get_word_count()` function that can be shared across services.
+- `POST /documents/word_count'` - Takes `{"text": "string"}` and returns a word count, using the `TextDocument` model and `get_word_count()` utilities from the the `core` library.
 
 ## Prerequisites
 

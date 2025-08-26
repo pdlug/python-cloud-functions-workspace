@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 
 class HelloRequest(BaseModel):
