@@ -1,6 +1,13 @@
 # Python Cloud Functions Workspace
 
-A Python monorepo using [uv](https://docs.astral.sh/uv/) workspaces that deploys APIs as Google Cloud Functions. This project demonstrates how to structure a monorepo with shared libraries and deployable services.
+A Python monorepo template for deploying FastAPI applications to Google Cloud Functions using modern tooling.
+
+## Key Features
+
+- **[uv](https://docs.astral.sh/uv/) workspaces** - Faster dependency management than pip/poetry with shared libraries across services
+- **Automated deployment** - GitHub Actions handles building workspace dependencies and Cloud Functions deployment using the official Google [deploy-cloud-functions](https://github.com/google-github-actions/deploy-cloud-functions) action.
+- **Type safety** - mypy to catch errors at development time, Pydantic to catch errors at runtime
+- **Modular structure** - easily add new services and shared libraries
 
 ## Project Structure
 
@@ -8,34 +15,21 @@ A Python monorepo using [uv](https://docs.astral.sh/uv/) workspaces that deploys
 python-cloud-functions-workspace/
 ├── libs/
 │   ├── core/                # Core business logic and utilities
-│   │   ├── core/
-│   │   │   ├── __init__.py
-│   │   │   ├── text.py      # Text processing functions
-│   │   │   ├── models.py    # Business domain models (TextDocument, etc.)
-│   │   └── pyproject.toml
 │   └── api/                 # FastAPI library (depends on core)
-│       ├── api/
-│       │   ├── __init__.py
-│       │   └── main.py      # FastAPI app with /hello routes
-│       └── pyproject.toml
 ├── services/
 │   └── api-function/        # Cloud Function deployment
-│       ├── main.py          # Cloud Functions entry point
-│       └── pyproject.toml
 ├── .github/workflows/
 │   └── deploy-cloud-function.yml  # GitHub Actions deployment
-└── pyproject.toml          # Workspace configuration
+└── pyproject.toml           # Workspace configuration
 ```
 
 ## Library Dependencies
 
 This project demonstrates a multi-layer dependency structure:
 
-- **`libs/core`**: Core business logic with simple models like `TextDocument`
-- **`libs/api`**: FastAPI web layer that depends on `core` for business logic
-- **`services/api-function`**: Cloud Function deployment that depends on `api`
-
-Example dependency chain: `api-function` → `api` → `core`
+- `libs/core`: Core business logic with simple models like `TextDocument`
+- `libs/api`: FastAPI web layer that depends on `core` for business logic
+- `services/api-function`: Cloud Function deployment that depends on `api`
 
 ## API Endpoints
 
