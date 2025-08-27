@@ -117,7 +117,7 @@ Use the included setup script to automate service account creation and permissio
 uv run python setup_gcp_deployment.py your-project-id
 
 # Or with custom key file location
-uv run python setup_gcp_deployment.py your-project-id --key-path ./gcp-key.json
+uv run python setup_gcp_deployment.py your-project-id --key-path ./key.json
 
 # Skip project setup if APIs are already enabled
 uv run python setup_gcp_deployment.py your-project-id --skip-project-setup
@@ -182,7 +182,7 @@ Edit `.github/workflows/deploy-cloud-function.yml` if needed:
 The workflow automatically deploys when:
 
 - Code is pushed to the `main` branch
-- Changes are made to `services/api-function/**` or `libs/api/**`
+- Changes are made to `services/api-function/**` or `libs/**`
 - Manually triggered from the GitHub Actions tab
 
 ## Configuration
