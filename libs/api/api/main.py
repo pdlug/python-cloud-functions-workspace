@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from .routes import documents, hello
 
-VERSION = "0.0.10"
+VERSION = "0.0.11"
 
 app: FastAPI = FastAPI(title="API", version=VERSION)
 
